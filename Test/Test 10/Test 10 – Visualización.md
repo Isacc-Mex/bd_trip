@@ -21,7 +21,7 @@ Se construyó una visualización utilizando **Navicat**, aprovechando sus herram
 
 #### Evidencias
 
-![Test 10 - Visualizacion]([grafica_navicat_pagos_por_origen.png))
+![Test 10 - Visualizacion](grafica_navicat_pagos_por_origen.png))
 
 #### Estatus:
 Exitosa.

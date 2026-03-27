@@ -31,7 +31,7 @@ Validar escalabilidad del sistema.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 06 - Compras generales masivas ](test1_230550.png)
+![Test 06 - Compras generales masivas]([test1_230550.png](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2006/10000_compras.jpg))
 
 #### Estatus:
 Exitosa.

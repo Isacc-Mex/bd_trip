@@ -29,7 +29,7 @@ Se deben considerar futuras métricas como:
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 09 - Metricas de tiempo" ](test9.png)
+![Test 09 - Metricas de tiempo](test9.png)
 
 #### Estatus:
 Exitosa.

@@ -3,40 +3,20 @@
 #### Objetivo
 Validar la correcta ejecución de compras múltiples filtradas por categoría, asegurando integridad de datos y consistencia en inventario y pagos.
 
-#### Precondiciones
-- Existencia de productos activos en la categoría "Perfumería".
-- Stock disponible suficiente.
-- Pasarela de pago operativa.
-- Usuario válido (registrado o invitado según el flujo).
+## 📝 Descripción
+Esta prueba tiene como objetivo validar la correcta inserción de registros de compras en la base de datos, específicamente para productos pertenecientes a la categoría **"Perfumería"**.
 
-#### Flujo del proceso
-- Consultar productos de la categoría "Perfumería".
-- Seleccionar productos aleatorios o definidos.
-- Agregar productos al carrito.
-- Validar totales e impuestos en el detalle.
-- Confirmar pedido.
-- Ejecutar transacción financiera.
-- Repetir el flujo hasta completar 10 compras.
-
-#### Validaciones
-- Categoría correcta en cada producto.
-- Totales correctos (precio, impuestos, descuentos).
-- Generación única de pedidos.
-- Estado de pago: aprobado.
-
-#### Resultado esperado
-10 pedidos creados correctamente.
-10 transacciones aprobadas.
-Inventario actualizado tras cada compra.
-
-### Posibles errores
-Productos fuera de categoría.
-Fallos en cálculo de totales.
-Pagos rechazados o inconsistentes.
+Se verifica que:
+- Existan productos registrados en la categoría "Perfumería".
+- Se puedan generar múltiples compras (10 registros).
+- Las compras se almacenen correctamente en la tabla correspondiente (por ejemplo: `pedidos` o `transacciones_financieras`).
+- Se mantenga la integridad de las relaciones entre tablas (`productos`, `categorias`, `carritos`, etc.).
 
 #### Evidencia
-![Test 01 - Compras en categoría Perfumería](test2.jpg)
+![Test 02 - Compras en categoría Perfumería](test2.png)
 
 #### Estatus:
 Exitosa.
+
+
 

@@ -9,4 +9,7 @@ Este caso de prueba tiene como objetivo validar la correcta generación y almace
 #### Evidencias
 ![Test 03 - Compras en el año 2026](test3.png)
 
+#### Estatus:
+Exitosa.
+
 

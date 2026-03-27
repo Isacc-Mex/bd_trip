@@ -1,6 +1,5 @@
 ## Test 05: Compras en categoría "Ropa para hombre"
 ---
-
 #### Objetivo
 Validar estabilidad con carga media.
 
@@ -30,7 +29,7 @@ Validar estabilidad con carga media.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 045 - Compras en categorías "Ropa para hombre" ](test1_230550.png)
+![Test 045 - Compras en categorías Ropa para hombre](500_compras_hombres.jpg)
 
 #### Estatus:
 Exitosa.

@@ -1,6 +1,5 @@
 ## Test 09 – Métricas de tiempo
 ---
-
 #### Objetivo
 Calcular indicadores de tiempo dentro del proceso de compra.
 

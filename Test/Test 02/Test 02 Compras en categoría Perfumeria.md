@@ -3,7 +3,7 @@
 #### Objetivo
 Validar la correcta ejecución de compras múltiples filtradas por categoría, asegurando integridad de datos y consistencia en inventario y pagos.
 
-## 📝 Descripción
+## Descripción
 Esta prueba tiene como objetivo validar la correcta inserción de registros de compras en la base de datos, específicamente para productos pertenecientes a la categoría **"Perfumería"**.
 
 Se verifica que:

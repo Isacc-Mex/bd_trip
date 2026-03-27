@@ -1,6 +1,5 @@
 ## Test 04: Compras en categoría "Ropa para mujer"
 ---
-
 #### Objetivo
 Evaluar comportamiento bajo alta carga.
 
@@ -29,10 +28,7 @@ Evaluar comportamiento bajo alta carga.
 - Inconsistencias
 
 #### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
-![Test 04 - Compras en categorías "Ropa para mujer" ](test1_230550.png)
+![Test 04 - Compras en categorías "Ropa para mujer" ](test4.png)
 
 #### Estatus:
 Exitosa.

@@ -17,8 +17,16 @@ Se construyó una visualización utilizando **Navicat**, aprovechando sus herram
 - Importe total acumulado por origen  
 - Visualización clara mediante gráficos  
 
-#### Consulta base utilizada
+#### Consulta base utilizada 
 
+#### Evidencias
+
+![Test 10 - Visualizacion" ]([test1_230550.png](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2010/grafica_navicat_pagos_por_origen.png))
+
+#### Estatus:
+Exitosa.
+
+#### Consulta base utilizada 
 ```sql
 SELECT 
     origen_pago,

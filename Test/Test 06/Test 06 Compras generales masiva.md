@@ -28,9 +28,6 @@ Validar escalabilidad del sistema.
 - Problemas de concurrencia
 
 #### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
 ![Test 06 - Compras generales masivas](10000_compras.jpg))
 
 #### Estatus:

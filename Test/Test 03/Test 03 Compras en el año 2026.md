@@ -1,6 +1,5 @@
 ## Test 03: Compras en el año 2026
 ---
-
 #### Objetivo
 Validar la correcta asignación y persistencia de fechas en transacciones.
 
@@ -28,10 +27,7 @@ Validar la correcta asignación y persistencia de fechas en transacciones.
 - Rechazos del sistema
 
 #### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
-![Test 03 - Compras en el año 2026" ](test1_230550.png)
+![Test 03 - Compras en el año 2026](test3.png)
 
 #### Estatus:
 Exitosa.

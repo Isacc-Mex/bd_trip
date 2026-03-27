@@ -26,20 +26,3 @@ Se construyó una visualización utilizando **Navicat**, aprovechando sus herram
 #### Estatus:
 Exitosa.
 
-#### Consulta base utilizada 
-```sql
-SELECT 
-    origen_pago,
-    COUNT(*) AS total_pagos,
-    SUM(importe) AS monto_total
-FROM pagos
-GROUP BY origen_pago;
-
-#### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
-![Test 10 - Visualizacion" ](test1_230550.png)
-
-#### Estatus:
-Exitosa.

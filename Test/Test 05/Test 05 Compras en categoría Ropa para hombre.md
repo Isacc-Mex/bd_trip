@@ -26,10 +26,7 @@ Validar estabilidad con carga media.
 - Inconsistencias
 
 #### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
-![Test 045 - Compras en categorías Ropa para hombre](500_compras_hombres.jpg)
+![Test 05 - Compras en categorías Ropa para hombre](500_compras_hombres.jpg)
 
 #### Estatus:
 Exitosa.

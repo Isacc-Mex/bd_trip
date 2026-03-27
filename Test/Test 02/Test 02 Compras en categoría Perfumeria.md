@@ -1,4 +1,4 @@
-##Test 02: Compras en categoría "Perfumería"
+## Test 02: Compras en categoría "Perfumería"
 ---
 #### Objetivo
 Validar la correcta ejecución de compras múltiples filtradas por categoría, asegurando integridad de datos y consistencia en inventario y pagos.

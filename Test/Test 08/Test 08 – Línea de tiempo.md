@@ -29,7 +29,7 @@ ORDER BY fecha_agregado ASC
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 08 - Linea del tiempo" ](test1_230550.png)
+![Test 08 - Linea del tiempo](test8.jpg)
 
 #### Estatus:
 Exitosa.

@@ -30,10 +30,10 @@ A través de escenarios simbólicos, una estética atmosférica y cambios visual
 
 ## Colaboradores
 
-| Nombre | Rol | GitHub |
-|--------|-----|--------|
+| Nombre | Rol | GitHub |foto_perfil|
+|--------|-----|--------|-----------|
 | Cristian Isacc Moreno Jimenez | Programador | [@usuario](https://github.com/Isacc-Mex) | [@imageprofile](https://avatars.githubusercontent.com/u/173747074?v=4)|
-| Juan Manuel Catarino Barrios |Desarrollador BD||[@usuario](https://github.com/jcatarinoB)| [@imageprofile](https://avatars.githubusercontent.com/u/173098178?v=4)|
+| Juan Manuel Catarino Barrios |Desarrollador BD|[@usuario](https://github.com/jcatarinoB)| [@imageprofile](https://avatars.githubusercontent.com/u/173098178?v=4)|
 | Andrea Peña Leal | Desarrolladora BD | [@usuario](https://github.com/Andrea030405) | [@imageprofile](https://avatars.githubusercontent.com/u/173745971?v=4)|
 | Diego Islas Lizardi | Programador | [@usuario](https://github.com/islas-diego23)| [@imageprofile](https://avatars.githubusercontent.com/u/175444296?v=4)|
 | Luis Dario Mendoza Morales | Animador | [@usuario](https://github.com/LuisDario87) | [@imageprofile](https://avatars.githubusercontent.com/u/175444106?v=4)|

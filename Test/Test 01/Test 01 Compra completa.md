@@ -1,14 +1,14 @@
-##Test 01: Compra completa
+## Test 01: Compra completa
 ---
 #### Descripción:
 
 Este test valida el flujo completo de una compra dentro del sistema, desde la selección de productos hasta la confirmación de la transacción financiera.
 
-####Objetivo
+#### Objetivo
 
 Verificar que el proceso de compra funcione correctamente de principio a fin sin errores.
 
-####Flujo del proceso
+#### Flujo del proceso
 
 1. Carrito
 - El usuario agrega uno o más productos al carrito.

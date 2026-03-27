@@ -7,7 +7,6 @@ Generar una **vista** que consolide toda la información relevante del proceso d
 La vista integra información de múltiples tablas del sistema (clientes, sesiones, carrito, pedidos y pagos).
 
 #### Campos requeridos
-
 - Nombre completo del comprador  
 - Fecha de sesión  
 - Duración de la sesión  
@@ -36,18 +35,10 @@ La vista integra información de múltiples tablas del sistema (clientes, sesion
 
 #### Funciones de agregación:
   - `COUNT()` → total de productos  
-  - `SUM()` → importes  
-
-- Cálculo de tiempo total:
-```sql
-TIMESTAMPDIFF(MINUTE, fecha_sesion, fecha_pago)
+  - `SUM()` → importes
 
 #### Evidencias
-
-Se debe incluir evidencia visual del resultado de la consulta ejecutada.
-
-![Test 07 - Consulta integral(vista)" ](test1_230550.png)
+![Test 07 - Consulta integral(vista)](test7.png)
 
 #### Estatus:
 Exitosa.
-

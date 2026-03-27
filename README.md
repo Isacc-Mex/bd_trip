@@ -14,7 +14,7 @@ Desarrollo de videojuego narrativo 2D: TRIP
 . Juan Manuel Catarino Barrios 
 - Cristian Isacc Moreno Jimenez  
 - Andrea Peña Leal  
-- Diego Islas Lizardi  
+- Brandon Diego Islas Lizardi  
 - Luis Dario Mendoza Morales  
 
 ---

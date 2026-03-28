@@ -39,7 +39,6 @@ CREATE DEFINER=`root`@`localhost` TRIGGER `personas_AFTER_INSERT` AFTER INSERT O
 END
 
 ```
----
 
 #### trigger_personas_AFTER_UPDATE
 Descripción:
@@ -54,7 +53,6 @@ CREATE DEFINER=`root`@`localhost` TRIGGER `personas_AFTER_UPDATE` AFTER UPDATE O
 END
 
 ```
----
 
 #### trigger_personas_AFTER_DELETE
 Descripción:
@@ -1217,4 +1215,3 @@ Esta tabla almacena información de auditoría del sistema, incluyendo:
 #### Triggers
 
 No se implementaron triggers en esta base de datos.
----

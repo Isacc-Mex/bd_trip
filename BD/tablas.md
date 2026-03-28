@@ -1215,3 +1215,444 @@ Esta tabla almacena información de auditoría del sistema, incluyendo:
 #### Triggers
 
 No se implementaron triggers en esta base de datos.
+
+## Funciones 
+
+#### calucla_antiguedad
+
+**Descripción:** 
+Calcula la antigüedad en años a partir de una fecha de registro.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `calcula_antiguedad`(v_fecha_registro DATE) RETURNS int
+    DETERMINISTIC
+BEGIN
+       
+RETURN floor(datediff(NOW(),v_fecha_nacimiento)/365.25);
+END
+```
+**Uso:**
+Se utiliza para calcular el tiempo en años desde una fecha hasta la actualidad.
+
+#### calcula_edad
+
+**Descripción:** 
+Calcula la edad de una persona en años a partir de su fecha de nacimiento.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `calcula_edad`(v_fecha_nacimiento DATE) RETURNS int
+    DETERMINISTIC
+BEGIN
+       
+RETURN floor(datediff(NOW(),v_fecha_nacimiento)/365.25);
+END
+```
+
+**Uso:**
+Se utiliza para obtener la edad actual de una persona con base en su fecha de nacimiento.
+
+#### elige_cantidad
+
+**Descripción:** 
+Genera una cantidad aleatoria basada en probabilidades predefinidas, simulando un comportamiento realista de selección de cantidades.
+
+```sql
+CREATE FUNCTION elige_cantidad()
+RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_random INT;
+
+    SET v_random = genera_numero_aleatorio_rangos(1, 1000);
+
+    RETURN CASE
+        WHEN v_random <= 820 THEN 1
+        WHEN v_random <= 940 THEN 2
+        WHEN v_random <= 980 THEN 3
+        WHEN v_random <= 995 THEN 4
+        ELSE 5
+    END;
+END;
+```
+
+**Uso:**
+Se utiliza para asignar cantidades de forma probabilística, por ejemplo en simulaciones de compras o generación de datos de prueba.
+
+#### elige_dispositivo
+
+**Descripción:** 
+Genera un tipo de dispositivo de forma aleatoria basado en probabilidades predefinidas, simulando el comportamiento real de acceso de los usuarios.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_dispositivo`() RETURNS varchar(50) CHARSET utf8mb4
+    DETERMINISTIC
+BEGIN
+ DECLARE v_random INT;
+
+    -- Genera número aleatorio entre 1 y 100
+    SET v_random = genera_numero_aleatorio_rangos(1,100);
+
+    RETURN
+        CASE
+            WHEN v_random BETWEEN 1 AND 65 THEN 'Smart Phone'
+            WHEN v_random BETWEEN 66 AND 77 THEN 'Laptop'
+            WHEN v_random BETWEEN 78 AND 92 THEN 'PC'
+            WHEN v_random BETWEEN 93 AND 94 THEN 'Tablet'
+            WHEN v_random = 95 THEN 'Smart TV'
+            ELSE 'Voice Assistant'
+        END;
+END
+```
+**Uso:**
+Se utiliza para asignar de manera aleatoria el tipo de dispositivo desde el cual un usuario accede al sistema, útil para simulaciones y análisis de comportamiento.
+
+#### elige_divisa
+
+**Descripción:** 
+Selecciona de forma aleatoria una divisa existente en la tabla `divisas`, devolviendo su identificador.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_divisa`() RETURNS int
+    READS SQL DATA
+BEGIN
+    DECLARE v_id INT;
+    SELECT d.id
+      INTO v_id FROM divisas d  
+      ORDER BY RAND() LIMIT 1;
+    RETURN v_id;
+
+END
+```
+
+**Uso:**
+Se utiliza para asignar una divisa aleatoria en operaciones del sistema, como simulaciones de compras o generación de datos.
+
+#### elige_pais
+
+**Descripción:** 
+Genera un código de país de forma aleatoria basado en una distribución probabilística, simulando la procedencia geográfica de los usuarios.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_pais`() RETURNS varchar(2) CHARSET utf8mb4
+    NO SQL
+BEGIN
+ DECLARE v_rand INT;
+
+    -- 1..10000 para manejar decimales en porcentajes
+    SET v_rand = FLOOR(1 + RAND() * 10000);
+
+    RETURN CASE
+        WHEN v_rand <= 9510 THEN 'MX'  -- 95.10%
+        WHEN v_rand <= 9860 THEN 'US'  -- +3.50% = 98.60%
+        WHEN v_rand <= 9920 THEN 'CA'  -- +0.60% = 99.20%
+        WHEN v_rand <= 9950 THEN 'CO'  -- +0.30% = 99.50%
+        WHEN v_rand <= 9970 THEN 'ES'  -- +0.20% = 99.70%
+        WHEN v_rand <= 9985 THEN 'GT'  -- +0.15% = 99.85%
+        WHEN v_rand <= 9990 THEN 'DE'  -- +0.05% = 99.90%
+        ELSE 'OT'                      -- +0.10% = 100%
+    END;
+END
+```
+
+**Uso:**
+Se utiliza para asignar un país de origen a usuarios o sesiones dentro del sistema, útil para análisis geográfico y simulación de datos.
+
+#### elige_plataforma
+
+**Descripción:** 
+Selecciona de forma aleatoria el origen de acceso de un usuario dentro del sistema, utilizando una lista predefinida de opciones.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_plataforma`() RETURNS varchar(50) CHARSET utf8mb4
+    DETERMINISTIC
+BEGIN
+	DECLARE v_plataforma_elegida VARCHAR(50);
+    SET v_plataforma_elegida= 
+	ELT(genera_numero_aleatorio_rangos(1,3),
+"Plataforma", "Liga Externa", "Campaña Publicitaria");
+
+RETURN v_plataforma_elegida;
+END
+```
+
+**Uso:**
+Se utiliza para asignar el origen de acceso de un usuario o sesión, útil para análisis de tráfico y marketing.
+
+#### elige_producto
+
+**Descripción:** 
+Selecciona un producto de forma aleatoria. Si se proporciona una categoría, el producto se elige únicamente dentro de esa categoría. En caso contrario, se selecciona cualquier producto disponible en el sistema.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_producto`(v_categoria VARCHAR(80)) RETURNS int
+    READS SQL DATA
+BEGIN
+    DECLARE v_id INT;
+    DECLARE v_existe INT DEFAULT 0;
+
+    -- Si se proporciona una categoría, validar si existe
+    IF v_categoria IS NOT NULL THEN
+        SELECT COUNT(*)
+        INTO v_existe
+        FROM categorias
+        WHERE nombre = v_categoria;
+
+        -- Si no existe, detener ejecución
+        IF v_existe = 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La categoria ingresada no existe';
+        END IF;
+    END IF;
+
+    -- Si la categoría es NULL → producto aleatorio
+    IF v_categoria IS NULL THEN
+        SELECT p.id
+        INTO v_id
+        FROM productos p
+        ORDER BY RAND()
+        LIMIT 1;
+
+    ELSE
+        -- Producto aleatorio de la categoría indicada
+        SELECT p.id
+        INTO v_id
+        FROM productos p
+        JOIN productos_categorias pc 
+            ON p.id = pc.producto_id
+        JOIN categorias c 
+            ON pc.categoria_id = c.id
+        WHERE c.nombre = v_categoria
+        ORDER BY RAND()
+        LIMIT 1;
+    END IF;
+
+    RETURN v_id;
+END
+```
+
+**Uso:**
+Se utiliza para asignar productos de manera aleatoria en simulaciones de compras o generación de datos, pudiendo filtrar por categoría para mayor control.
+
+#### elige_sesion
+
+**Descripción:** 
+Selecciona una sesión activa de forma aleatoria dentro del sistema. Solo se consideran aquellas sesiones que tienen una fecha de inicio registrada.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_sesion`() RETURNS int
+    READS SQL DATA
+BEGIN
+    DECLARE v_id INT;
+
+    SELECT id INTO v_id
+    FROM sesiones
+    WHERE fecha_inicio IS NOT NULL
+    ORDER BY RAND()
+    LIMIT 1;
+
+    IF v_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No hay sesiones disponibles';
+    END IF;
+
+    RETURN v_id;
+END
+```
+
+**Uso:**
+Se utiliza para asignar una sesión existente en procesos de simulación o pruebas, garantizando que la sesión sea válida (con fecha de inicio).
+
+#### elige_sistema_operativo
+
+**Descripción:** 
+Selecciona un sistema operativo de forma aleatoria en función del tipo de dispositivo proporcionado, utilizando distribuciones probabilísticas para simular el uso real de tecnologías.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_sistema_operativo`(v_dispositivo VARCHAR(50)) RETURNS varchar(50) CHARSET utf8mb4
+    DETERMINISTIC
+BEGIN
+ DECLARE v_random INT;
+
+    SET v_random = genera_numero_aleatorio_rangos(1,100);
+    RETURN
+    CASE
+
+        -- SMARTPHONE
+        WHEN v_dispositivo = 'Smart Phone' THEN
+            CASE
+                WHEN v_random <= 82 THEN 'Android'
+                ELSE 'iOS'
+            END
+
+        -- LAPTOP y DESKTOP
+        WHEN v_dispositivo IN ('Laptop','PC') THEN
+            CASE
+                WHEN v_random <= 75 THEN 'Windows'
+                WHEN v_random <= 95 THEN 'MacOS'
+                ELSE 'Linux'
+            END
+
+        -- TABLET
+        WHEN v_dispositivo = 'Tablet' THEN
+            CASE
+                WHEN v_random <= 55 THEN 'iOS'
+                ELSE 'Android'
+            END
+
+        -- SMART TV
+        WHEN v_dispositivo = 'Smart TV' THEN
+            CASE
+                WHEN v_random <= 60 THEN 'Android TV'
+                WHEN v_random <= 85 THEN 'Tizen'
+                ELSE 'WebOS'
+            END
+
+        -- ASISTENTE DE VOZ
+        WHEN v_dispositivo = 'Voice Assistant' THEN
+            CASE
+                WHEN v_random <= 50 THEN 'Alexa OS'
+                WHEN v_random <= 90 THEN 'Google Home'
+                ELSE 'Apple Homekit'
+            END
+
+        ELSE 'Desconocido'
+
+    END;
+END
+```
+
+**Uso:**
+Se utiliza para asignar un sistema operativo a un dispositivo dentro del sistema, permitiendo simular datos realistas para análisis tecnológico.
+
+#### elige_usuario
+
+**Descripción:** 
+Selecciona de forma aleatoria un usuario activo dentro del sistema, garantizando que solo se consideren registros con estatus válido.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `elige_usuario`() RETURNS int
+    READS SQL DATA
+BEGIN
+    DECLARE v_id INT;
+    SELECT u.persona_fisica_id
+      INTO v_id FROM usuarios u  WHERE u.estatus = "Activo"
+      ORDER BY RAND() LIMIT 1;
+    RETURN v_id;
+
+END
+```
+
+**Uso:**
+Se utiliza para obtener un usuario válido en procesos de simulación, pruebas o generación de datos dentro del sistema.
+
+#### fn_duracion_sesion
+
+**Descripción:** 
+Calcula la duración de una sesión en formato de tiempo (HH:MM:SS) a partir de la diferencia entre la fecha de inicio y la fecha de fin.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_duracion_sesion`(
+    fecha_inicio DATETIME,
+    fecha_fin DATETIME
+) RETURNS time
+    DETERMINISTIC
+BEGIN
+    RETURN SEC_TO_TIME(TIMESTAMPDIFF(SECOND, fecha_inicio, fecha_fin));
+END
+```
+
+**Uso:**
+Se utiliza para medir el tiempo que un usuario permanece activo en una sesión, útil para análisis de comportamiento y métricas de engagement.
+
+#### fn_tiempo_compra  
+
+**Descripción:**  
+Genera una nueva fecha y hora sumando un intervalo aleatorio de entre 1 y 10 minutos a una fecha base. Se utiliza para simular tiempos de compra o variaciones en registros temporales.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_tiempo_compra`(fecha_base DATETIME) RETURNS datetime
+    DETERMINISTIC
+BEGIN
+    RETURN DATE_ADD(fecha_base, INTERVAL FLOOR(1 + RAND()*10) MINUTE);
+END
+```
+**Uso:**
+Se utiliza para simular el momento en que se realiza una compra a partir de una fecha base, agregando un tiempo aleatorio.
+
+#### genera_numero_aleatorio_rangos  
+
+**Descripción:**  
+Genera un número entero aleatorio dentro de un rango definido, incluyendo tanto el límite inferior como el límite superior.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `genera_numero_aleatorio_rangos`(v_limite_inferior INT,v_limite_superior INT) RETURNS int
+    DETERMINISTIC
+BEGIN
+  RETURN FLOOR(v_limite_inferior + (RAND() * (v_limite_superior
+  - v_limite_inferior + 1)));
+END
+```
+
+**Uso:**
+Se utiliza para generar valores aleatorios en un rango específico, útil en pruebas, simulaciones, generación de datos ficticios o lógica que requiera variabilidad controlada dentro de ciertos límites.
+
+#### limpiar_caracteres_especiales  
+
+**Descripción:**  
+Limpia un texto eliminando caracteres especiales y normalizando letras con acentos o caracteres propios del español. Convierte caracteres acentuados a su forma básica y elimina cualquier símbolo que no sea letra, número, guion o punto.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `limpiar_caracteres_especiales`(p_texto TEXT) RETURNS text CHARSET utf8mb4
+    DETERMINISTIC
+BEGIN
+
+    DECLARE v_texto TEXT;
+
+    SET v_texto = p_texto;
+
+    -- Normalización básica (acentos)
+    SET v_texto = REPLACE(v_texto, 'á', 'a');
+    SET v_texto = REPLACE(v_texto, 'é', 'e');
+    SET v_texto = REPLACE(v_texto, 'í', 'i');
+    SET v_texto = REPLACE(v_texto, 'ó', 'o');
+    SET v_texto = REPLACE(v_texto, 'ú', 'u');
+
+    SET v_texto = REPLACE(v_texto, 'Á', 'A');
+    SET v_texto = REPLACE(v_texto, 'É', 'E');
+    SET v_texto = REPLACE(v_texto, 'Í', 'I');
+    SET v_texto = REPLACE(v_texto, 'Ó', 'O');
+    SET v_texto = REPLACE(v_texto, 'Ú', 'U');
+
+    SET v_texto = REPLACE(v_texto, 'ñ', 'n');
+    SET v_texto = REPLACE(v_texto, 'Ñ', 'N');
+    SET v_texto = REPLACE(v_texto, 'ü', 'u');
+    SET v_texto = REPLACE(v_texto, 'Ü', 'U');
+
+    -- Expresión regular:
+    -- elimina cualquier caracter que NO sea letra, número o espacio o punto
+    SET v_texto = REGEXP_REPLACE(v_texto, '[^A-Za-z0-9-.]', '');
+
+    RETURN v_texto;
+END
+```
+
+**Uso:**
+Se utiliza para limpiar y estandarizar textos antes de almacenarlos o procesarlos, por ejemplo en nombres, direcciones o datos de entrada de usuarios.
+
+#### saluda  
+
+**Descripción:**  
+Devuelve un mensaje de saludo fijo desde una función en SQL. Es una función simple utilizada principalmente para pruebas o demostraciones.
+
+```sql
+CREATE DEFINER=`root`@`localhost` FUNCTION `saluda`() RETURNS varchar(50) CHARSET utf8mb4
+    DETERMINISTIC
+BEGIN
+
+RETURN "Hola desde una función SQL";
+END
+```
+
+**Uso:**
+Se utiliza para verificar el correcto funcionamiento de funciones en la base de datos, realizar pruebas básicas o como ejemplo didáctico para entender la creación y ejecución de funciones en SQL.
+

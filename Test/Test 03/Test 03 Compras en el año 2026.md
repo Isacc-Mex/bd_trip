@@ -31,7 +31,7 @@ Validar la correcta asignación y persistencia de fechas en transacciones.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 03 - Compras en el año 2026" ](test1_230550.png)
+![Test 03 - Compras en el año 2026" ](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2003/carritos_test3.png)
 
 #### Estatus:
 Exitosa.

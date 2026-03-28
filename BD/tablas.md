@@ -2654,6 +2654,7 @@ END
 ```
 **Uso:**
 Se utiliza para generar pedidos en estado "Pendiente" a partir de carritos activos, útil en pruebas donde se requiere simular órdenes sin procesar pagos. Permite crear múltiples pedidos (v_cuantos) de forma automatizada para testing o análisis.
+
 ---
 #### simula_sesiones  
 

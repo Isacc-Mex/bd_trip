@@ -32,7 +32,7 @@ Evaluar comportamiento bajo alta carga.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 04 - Compras en categorías "Ropa para mujer" ](test1_230550.png)
+![Test 04 - Compras en categorías "Ropa para mujer" ](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2004/carritos_test4.png)
 
 #### Estatus:
 Exitosa.

@@ -2583,6 +2583,7 @@ END
 ```
 **Uso:**
 Se utiliza para simular compras completas en un sistema de e-commerce, tomando carritos activos (p_total), generando pedidos, asignando métodos de pago y registrando transacciones.
+
 ---
 
 #### simula_pedidos  

@@ -11,7 +11,7 @@ Desarrollo de videojuego narrativo 2D: TRIP
 ---
 
 ## Integrantes del equipo
-. Juan Manuel Catarino Barrios 
+- Juan Manuel Catarino Barrios 
 - Cristian Isacc Moreno Jimenez  
 - Andrea Peña Leal  
 - Brandon Diego Islas Lizardi  

@@ -40,7 +40,7 @@ Pagos rechazados o inconsistentes.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 01 - Compras en categoría "Perfumería" ](test1_230550.png)
+![Test 01 - Compras en categoría "Perfumería" ](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2002/Captura%20de%20pantalla%202026-03-27%20195713.png)
 
 #### Estatus:
 Exitosa.

@@ -615,6 +615,49 @@ Esta tabla almacena información detallada de los productos disponibles en el si
 - Tipo de producto
 - Estado en inventario
 - Identificadores únicos como código de barras y SKU
+
+#### trigger_productos_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha insertado un nuevo producto.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_AFTER_INSERT` AFTER INSERT ON `productos` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "productos", "Insert", 
+    session_user(), concat_ws(" ",
+    "Se ha insertado un nuevo producto llamado:", new.nombre,
+    "con el ID: ", new.id), now());
+END
+
+```
+
+#### trigger_productos_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado un producto.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_AFTER_UPDATE` AFTER UPDATE ON `productos` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "productos", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado el producto con el ID: ", old.id), now());
+END
+
+```
+
+#### trigger_productos_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado un producto.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_AFTER_DELETE` AFTER DELETE ON `productos` FOR EACH ROW BEGIN
+   INSERT INTO bitacora VALUES(DEFAULT, "productos", "Delete", 
+    session_user(), concat_ws(" ",
+    "Se ha  eliminado el producto con el ID: ", old.id), now());
+END
+
+```
 ---
 
 ## Tabla: productos_categorias
@@ -637,6 +680,66 @@ Esta tabla almacena la relación entre productos y categorías, permitiendo:
 - Asignar múltiples categorías a un producto
 - Organizar productos de forma flexible
 - Controlar el estado de la relación
+
+#### trigger_productos_categorias_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se asociado un producto a una categoria.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_categorias_AFTER_INSERT` AFTER INSERT ON `productos_categorias` FOR EACH ROW BEGIN
+    DECLARE v_nombre_producto VARCHAR(255);
+    DECLARE v_nombre_categoria VARCHAR(255);
+
+    SELECT nombre  INTO v_nombre_producto  FROM productos   WHERE id = NEW.producto_id;
+    SELECT nombre  INTO v_nombre_categoria  FROM categorias WHERE id = NEW.categoria_id;
+
+    INSERT INTO bitacora  VALUES ( DEFAULT,'productos_categorias','Insert', SESSION_USER(),
+        CONCAT('Se ha asociado el producto id: ', NEW.producto_id,' con el nombre de: ', v_nombre_producto,
+            ' con la categoría id: ', NEW.categoria_id,' con el nombre de: ', v_nombre_categoria),NOW());
+END
+
+```
+
+#### trigger_productos_categorias_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado un producto asociado a una categoria.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_categorias_AFTER_UPDATE` AFTER UPDATE ON `productos_categorias` FOR EACH ROW BEGIN
+    DECLARE v_nombre_producto VARCHAR(255);
+    DECLARE v_nombre_categoria VARCHAR(255);
+
+    SELECT nombre  INTO v_nombre_producto  FROM productos   WHERE id = NEW.producto_id;
+    SELECT nombre  INTO v_nombre_categoria  FROM categorias WHERE id = NEW.categoria_id;
+
+    INSERT INTO bitacora  VALUES ( DEFAULT,'productos_categorias','Update', SESSION_USER(),
+        CONCAT('Se actualizado el producto id: ', NEW.producto_id,' con el nombre de: ', v_nombre_producto,
+            ' a la categoría id: ', NEW.categoria_id,' con el nombre de: ', v_nombre_categoria),NOW());
+END
+
+```
+
+#### trigger_productos_categorias_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado un producto asociado a una categoria.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `productos_categorias_AFTER_DELETE` AFTER DELETE ON `productos_categorias` FOR EACH ROW BEGIN
+    DECLARE v_nombre_producto VARCHAR(255);
+    DECLARE v_nombre_categoria VARCHAR(255);
+
+    SELECT nombre  INTO v_nombre_producto  FROM productos   WHERE id = OLD.producto_id;
+    SELECT nombre  INTO v_nombre_categoria  FROM categorias WHERE id = OLD.categoria_id;
+
+    INSERT INTO bitacora  VALUES ( DEFAULT,'productos_categorias','Delete', SESSION_USER(),
+        CONCAT('Se ha eliminado la asociación del producto id: ', OLD.producto_id,' con el nombre de: ', v_nombre_producto,
+            ' con la categoría id: ', OLD.categoria_id,' con el nombre de: ', v_nombre_categoria),NOW());
+END
+
+```
 ---
 
 ## Tabla: carritos
@@ -967,6 +1070,39 @@ Esta tabla almacena información sobre las transacciones financieras realizadas 
 - Origen del pago
 - Monto de la transacción
 - Estado de aprobación
+
+#### trigger_tf_insert
+Descripción:
+Trigger que registra automáticamente que se ha creado una transacciòn.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `tf_insert` AFTER INSERT ON `transacciones_financieras` FOR EACH ROW INSERT INTO bitacora VALUES(DEFAULT,'transacciones_financieras','Insert',
+SESSION_USER(), CONCAT('Transaccion creada id:',NEW.id), NOW())
+
+```
+
+#### trigger_tf_update
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una transacciòn.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `tf_update` AFTER UPDATE ON `transacciones_financieras` FOR EACH ROW INSERT INTO bitacora VALUES(DEFAULT,'transacciones_financieras','Update',
+SESSION_USER(), CONCAT('Transaccion actualizada id:',NEW.id), NOW())
+
+```
+
+#### trigger_tf_delete
+Descripción:
+Trigger que registra automáticamente que se ha eliminado una transacciòn.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `tf_delete` AFTER DELETE ON `transacciones_financieras` FOR EACH ROW INSERT INTO bitacora VALUES(DEFAULT,'transacciones_financieras','Delete',
+SESSION_USER(), CONCAT('Transaccion eliminada id:',OLD.id), NOW())
+
+```
 ---
 
 ## Tabla: sesiones
@@ -997,6 +1133,60 @@ Esta tabla almacena información sobre las sesiones de los usuarios, incluyendo:
 - Sistema operativo
 - Ubicación aproximada (país)
 - Duración de la sesión
+
+#### trigger_sesiones_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha creado un nueva sesion.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `sesiones_AFTER_INSERT` AFTER INSERT ON `sesiones` FOR EACH ROW BEGIN
+	DECLARE v_usuario VARCHAR(100) DEFAULT NULL;
+	SET v_usuario = (select nickname from usuarios WHERE persona_fisica_id = new.usuario_id);
+	INSERT INTO bitacora VALUES(default, "sesiones",
+    "Insert", session_user(), concat_ws(" ", "Se ha creado un nueva
+    sesion con id:", new.id , "asociado al usuario con nickname:",  v_usuario,
+    "con estado:", new.estatus),
+    now());
+END
+
+```
+
+#### trigger_sesiones_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una sesión.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `sesiones_AFTER_UPDATE` AFTER UPDATE ON `sesiones` FOR EACH ROW BEGIN
+	declare v_usuario VARCHAR(100) DEFAULT NULL;
+	SET v_usuario = (select nickname from usuarios WHERE persona_fisica_id = new.usuario_id);
+	INSERT INTO bitacora VALUES(default, "sesiones",
+    "Update", session_user(), concat_ws(" ", "Se ha actualizado la sesión
+     con id:", new.id , "asociada  al usuario con nickname:",  v_usuario,
+    "con estado:", new.estatus),
+    now());
+END
+
+```
+
+#### trigger_sesiones_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado una sesión.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `sesiones_AFTER_DELETE` AFTER DELETE ON `sesiones` FOR EACH ROW BEGIN
+	DECLARE v_usuario VARCHAR(100) DEFAULT NULL;
+	SET v_usuario = (select nickname from usuarios WHERE persona_fisica_id = old.usuario_id);
+	INSERT INTO bitacora VALUES(default, "sesiones",
+    "Delete", session_user(), concat_ws(" ", "Se ha eliminado la sesión
+     con id:", old.id , "asociada  al usuario con nickname:",  v_usuario,
+    "con estado:", old.estatus),
+    now());
+END
+
+```
 ---
 
 ## Tabla: bitacora
@@ -1022,5 +1212,9 @@ Esta tabla almacena información de auditoría del sistema, incluyendo:
 - Tipo de operación realizada  
 - Tabla afectada  
 - Usuario responsable  
-- Fecha y hora del evento  
+- Fecha y hora del evento
+
+#### Triggers
+
+No se implementaron triggers en esta base de datos.
 ---

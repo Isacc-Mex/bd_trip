@@ -2419,6 +2419,7 @@ END
 ```
 **Uso:**
 Se utiliza para generar rápidamente carritos de compra con productos aleatorios para pruebas o simulaciones. Permite definir cuántos carritos crear (p_cuantos) y cuántos productos incluir en cada uno (p_total_productos), facilitando la generación de datos para testing en sistemas de e-commerce.
+
 ---
 #### simula_compras  
 

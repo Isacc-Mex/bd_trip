@@ -1217,7 +1217,7 @@ Esta tabla almacena información de auditoría del sistema, incluyendo:
 No se implementaron triggers en esta base de datos.
 
 ## Funciones 
-
+---
 #### calucla_antiguedad
 
 **Descripción:** 
@@ -1233,7 +1233,7 @@ END
 ```
 **Uso:**
 Se utiliza para calcular el tiempo en años desde una fecha hasta la actualidad.
-
+---
 #### calcula_edad
 
 **Descripción:** 
@@ -1250,7 +1250,7 @@ END
 
 **Uso:**
 Se utiliza para obtener la edad actual de una persona con base en su fecha de nacimiento.
-
+---
 #### elige_cantidad
 
 **Descripción:** 
@@ -1277,7 +1277,7 @@ END;
 
 **Uso:**
 Se utiliza para asignar cantidades de forma probabilística, por ejemplo en simulaciones de compras o generación de datos de prueba.
-
+---
 #### elige_dispositivo
 
 **Descripción:** 
@@ -1305,7 +1305,7 @@ END
 ```
 **Uso:**
 Se utiliza para asignar de manera aleatoria el tipo de dispositivo desde el cual un usuario accede al sistema, útil para simulaciones y análisis de comportamiento.
-
+---
 #### elige_divisa
 
 **Descripción:** 
@@ -1326,7 +1326,7 @@ END
 
 **Uso:**
 Se utiliza para asignar una divisa aleatoria en operaciones del sistema, como simulaciones de compras o generación de datos.
-
+---
 #### elige_pais
 
 **Descripción:** 
@@ -1356,7 +1356,7 @@ END
 
 **Uso:**
 Se utiliza para asignar un país de origen a usuarios o sesiones dentro del sistema, útil para análisis geográfico y simulación de datos.
-
+---
 #### elige_plataforma
 
 **Descripción:** 
@@ -1377,7 +1377,7 @@ END
 
 **Uso:**
 Se utiliza para asignar el origen de acceso de un usuario o sesión, útil para análisis de tráfico y marketing.
-
+---
 #### elige_producto
 
 **Descripción:** 
@@ -1432,7 +1432,7 @@ END
 
 **Uso:**
 Se utiliza para asignar productos de manera aleatoria en simulaciones de compras o generación de datos, pudiendo filtrar por categoría para mayor control.
-
+---
 #### elige_sesion
 
 **Descripción:** 
@@ -1461,7 +1461,7 @@ END
 
 **Uso:**
 Se utiliza para asignar una sesión existente en procesos de simulación o pruebas, garantizando que la sesión sea válida (con fecha de inicio).
-
+---
 #### elige_sistema_operativo
 
 **Descripción:** 
@@ -1523,7 +1523,7 @@ END
 
 **Uso:**
 Se utiliza para asignar un sistema operativo a un dispositivo dentro del sistema, permitiendo simular datos realistas para análisis tecnológico.
-
+---
 #### elige_usuario
 
 **Descripción:** 
@@ -1544,7 +1544,7 @@ END
 
 **Uso:**
 Se utiliza para obtener un usuario válido en procesos de simulación, pruebas o generación de datos dentro del sistema.
-
+---
 #### fn_duracion_sesion
 
 **Descripción:** 
@@ -1563,7 +1563,7 @@ END
 
 **Uso:**
 Se utiliza para medir el tiempo que un usuario permanece activo en una sesión, útil para análisis de comportamiento y métricas de engagement.
-
+---
 #### fn_tiempo_compra  
 
 **Descripción:**  
@@ -1578,7 +1578,7 @@ END
 ```
 **Uso:**
 Se utiliza para simular el momento en que se realiza una compra a partir de una fecha base, agregando un tiempo aleatorio.
-
+---
 #### genera_numero_aleatorio_rangos  
 
 **Descripción:**  
@@ -1595,7 +1595,7 @@ END
 
 **Uso:**
 Se utiliza para generar valores aleatorios en un rango específico, útil en pruebas, simulaciones, generación de datos ficticios o lógica que requiera variabilidad controlada dentro de ciertos límites.
-
+---
 #### limpiar_caracteres_especiales  
 
 **Descripción:**  
@@ -1638,7 +1638,7 @@ END
 
 **Uso:**
 Se utiliza para limpiar y estandarizar textos antes de almacenarlos o procesarlos, por ejemplo en nombres, direcciones o datos de entrada de usuarios.
-
+---
 #### saluda  
 
 **Descripción:**  
@@ -1655,4 +1655,1077 @@ END
 
 **Uso:**
 Se utiliza para verificar el correcto funcionamiento de funciones en la base de datos, realizar pruebas básicas o como ejemplo didáctico para entender la creación y ejecución de funciones en SQL.
+---
+## Procesos
+---
+
+#### aux_finaliza_pedido_individual  
+
+**Descripción:**  
+Procedimiento almacenado que finaliza un pedido a partir de un carrito específico. Calcula el total de productos y el importe, genera el pedido correspondiente, registra la transacción financiera y actualiza el estado del carrito.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `aux_finaliza_pedido_individual`(IN p_carrito_id INT)
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+    DECLARE v_total_prod INT;
+    DECLARE v_f_ultimo_item DATETIME;
+    DECLARE v_usuario_id INT;
+    DECLARE v_metodo_id INT;
+    DECLARE v_pedido_id INT;
+
+    -- A. Obtener datos del carrito y fecha del último producto
+    SELECT 
+        IFNULL(SUM(precio_unitario * cantidad), 0), 
+        IFNULL(SUM(cantidad), 0), 
+        MAX(fecha_registro) 
+    INTO v_total, v_total_prod, v_f_ultimo_item
+    FROM carrito_detalle
+    WHERE carrito_id = p_carrito_id AND estatus = 'Activo';
+
+    -- B. Solo proceder si hay productos
+    IF v_total > 0 THEN
+        
+        -- C. Encontrar al dueño del carrito (Relación Carritos -> Sesiones -> Usuarios)
+        SELECT s.usuario_id INTO v_usuario_id
+        FROM sesiones s JOIN carritos c ON s.id = c.sesion_id
+        WHERE c.id = p_carrito_id;
+
+        -- D. Buscar el método de pago del usuario (Relación Usuarios -> Metodos_Pago)
+        SELECT id INTO v_metodo_id FROM metodos_pago 
+        WHERE usuario_id = v_usuario_id LIMIT 1;
+
+        -- E. INSERTAR PEDIDO (Relación Pedidos -> Carritos)
+        INSERT INTO pedidos(
+            carrito_id, 
+            total_productos, 
+            importe_total, 
+            fecha_registro, 
+            estatus, 
+            aprobacion
+        )
+        VALUES (
+            p_carrito_id, 
+            v_total_prod, 
+            v_total, 
+            DATE_ADD(v_f_ultimo_item, INTERVAL 30 SECOND), 
+            'Pagado', 
+            1
+        );
+        
+        SET v_pedido_id = LAST_INSERT_ID();
+
+        -- F. INSERTAR TRANSACCIÓN (Relación Transacciones -> Pedidos Y Metodos_Pago)
+        -- Ajusta el nombre de la columna 'pedido_id' si en tu tabla se llama distinto
+        INSERT INTO transacciones_financieras(
+            metodo_pago_id, 
+            tipo, 
+            monto, 
+            fecha_registro, 
+            estatus
+        )
+        VALUES (
+            v_metodo_id, 
+            'Compra', 
+            v_total, 
+            DATE_ADD(v_f_ultimo_item, INTERVAL 1 MINUTE), 
+            'Aprobado'
+        );
+
+        -- G. ACTUALIZAR CARRITO (Cierre del ciclo)
+        UPDATE carritos SET estatus = 'Convertido' WHERE id = p_carrito_id;
+
+    END IF;
+END
+```
+**Uso:**
+Se utiliza para automatizar el proceso de cierre de compra de un carrito específico (p_carrito_id), generando el pedido correspondiente, registrando la transacción financiera y actualizando el estado del carrito a "Convertido".
+---
+#### crear_usuarios  
+
+**Descripción:**  
+Procedimiento almacenado que genera automáticamente usuarios a partir de los registros de la tabla `persona_fisica`. Construye un nickname único basado en el nombre y apellido, asigna una contraseña temporal y registra el usuario en la base de datos evitando duplicados.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `crear_usuarios`()
+BEGIN
+    DECLARE v_id_pf BIGINT;
+    DECLARE v_nombre VARCHAR(100);
+    DECLARE v_apellido VARCHAR(100);
+
+    DECLARE v_base_nick VARCHAR(255);
+    DECLARE v_nick_final VARCHAR(255);
+    DECLARE v_pass_temp VARCHAR(255);
+
+    DECLARE v_sufijo INT;
+    DECLARE v_existe INT;
+
+    DECLARE done INT DEFAULT 0;
+
+    -- Cursor: recorre todas las personas físicas
+    -- (si quieres solo las que NO tienen usuario, ya lo filtramos dentro)
+    DECLARE cur CURSOR FOR
+        SELECT pf.id, pf.nombre, pf.primer_apellido
+        FROM persona_fisica pf;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_id_pf, v_nombre, v_apellido;
+
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- 1) Evita duplicar: si ya existe usuario para esta persona, saltar
+        SELECT COUNT(*)
+          INTO v_existe
+          FROM usuarios u
+         WHERE u.persona_fisica_id = v_id_pf;
+
+        IF v_existe > 0 THEN
+            ITERATE read_loop;
+        END IF;
+
+        -- 2) Construir nickname base: primera letra del nombre + '.' + primer apellido
+        --    - lower()
+        --    - limpiar caracteres especiales
+        SET v_base_nick = LOWER(
+            limpiar_caracteres_especiales(
+                CONCAT(LEFT(TRIM(v_nombre), 1), '.', TRIM(v_apellido))
+            )
+        );
+
+        -- opcional: quitar espacios que pudieron quedar (por si apellido compuesto raro)
+        SET v_base_nick = REPLACE(v_base_nick, ' ', '');
+
+        -- 3) Garantizar único: si ya existe, agregar sufijo incremental
+        SET v_nick_final = v_base_nick;
+        SET v_sufijo = 1;
+
+        nick_loop: LOOP
+            SELECT COUNT(*)
+              INTO v_existe
+              FROM usuarios u
+             WHERE u.nickname = v_nick_final;
+
+            IF v_existe = 0 THEN
+                LEAVE nick_loop;
+            END IF;
+
+            SET v_sufijo = v_sufijo + 1;
+            SET v_nick_final = CONCAT(v_base_nick, v_sufijo);  -- m.ramirez2, m.ramirez3, ...
+        END LOOP;
+
+        -- 4) Password temporal en texto plano (ejemplo)
+        --    Puedes cambiar el patrón al que uses en clase
+        SET v_pass_temp = CONCAT('Temp#', v_id_pf);
+
+        -- 5) Insertar usuario
+        INSERT INTO usuarios (persona_fisica_id, nickname, contrasenia,fecha_registro, estatus)
+        VALUES (v_id_pf, v_nick_final, v_pass_temp, NOW(), default);
+
+    END LOOP;
+
+    CLOSE cur;
+END
+```
+
+**Uso:**
+Se utiliza para automatizar la creación de cuentas de usuario a partir de registros existentes de personas físicas.
+
+#### finalizar_compra  
+
+**Descripción:**  
+Procedimiento almacenado que procesa la finalización de una compra a partir de un carrito. Calcula el total, genera una transacción financiera con datos simulados (origen, CLABE, convenio, estatus) y actualiza el estado del carrito.
+
+**Parámetros:**  
+- `p_carrito_id` (INT): Identificador del carrito que se desea finalizar  
+
+**Retorna:**  
+- *No retorna valores* (Procedimiento almacenado)  
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `finalizar_compra`(
+    IN p_carrito_id INT
+)
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+
+    DECLARE v_tipo VARCHAR(20);
+    DECLARE v_origen VARCHAR(50);
+    DECLARE v_metodo_pago INT;
+    DECLARE v_estatus VARCHAR(20);
+
+    DECLARE v_clabe CHAR(18);
+    DECLARE v_convenio VARCHAR(50);
+
+    --  Total del carrito
+    SELECT IFNULL(SUM(cantidad * precio_unitario),0)
+    INTO v_total
+    FROM carrito_detalle
+    WHERE carrito_id = p_carrito_id;
+
+    --  Validación
+    IF v_total = 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'El carrito está vacío';
+    END IF;
+
+    --  Tipo fijo (más lógico en compras)
+    SET v_tipo = 'Compra';
+
+    --  Origen aleatorio (respetando ENUM EXACTO)
+    SET v_origen = ELT(FLOOR(1 + (RAND() * 7)),
+        'Tarjeta de Débito',
+        'Tarjeta de Crédito',
+        'Transferencia Bancaria',
+        'Socio Comercial',
+        'Tarjeta de Regalo',
+        'Créditos Devolución',
+        'Vales Despensa'
+    );
+
+    --  Método de pago real (mejor opción)
+    SELECT id INTO v_metodo_pago
+    FROM metodos_pago
+    ORDER BY RAND()
+    LIMIT 1;
+
+    --  Estatus aleatorio
+    SET v_estatus = ELT(FLOOR(1 + (RAND() * 4)),
+        'Aprobado',
+        'No Aprobado',
+        'Pendiente',
+        'Cancelado'
+    );
+
+    --  CLABE simulada (18 dígitos)
+    SET v_clabe = LPAD(FLOOR(RAND()*100000000000000000),18,'0');
+
+    --  Número de convenio
+    SET v_convenio = CONCAT('CONV-', FLOOR(RAND()*100000));
+
+    --  INSERT FINAL
+    INSERT INTO transacciones_financieras (
+        tipo,
+        origen,
+        clave_interbancaria,
+        numero_convenio,
+        monto,
+        metodo_pago_id,
+        estatus,
+        fecha_registro,
+        fecha_actualizacion
+    )
+    VALUES (
+        v_tipo,
+        v_origen,
+        v_clabe,
+        v_convenio,
+        v_total,
+        v_metodo_pago,
+        v_estatus,
+        NOW(),
+        NOW()
+    );
+
+    --  Cerrar carrito
+    UPDATE carrito
+    SET estado = 'Finalizado'
+    WHERE id = p_carrito_id;
+
+END
+```
+
+**Uso:**
+Se utiliza para completar el proceso de compra de un carrito (p_carrito_id), validando que tenga productos, generando una transacción financiera con datos simulados y actualizando el estado del carrito a "Finalizado". Es útil en pruebas de sistemas de e-commerce y simulaciones de procesos de pago.
+---
+#### limpiar_bd  
+
+**Descripción:**  
+Procedimiento almacenado que elimina los datos de varias tablas de la base de datos y reinicia sus contadores `AUTO_INCREMENT`. Incluye una validación de seguridad mediante contraseña para evitar ejecuciones accidentales.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `limpiar_bd`(reset_password varchar(20))
+BEGIN
+    -- Validar contraseña antes de ejecutar
+    IF reset_password <> 'TI-evnd#2026' THEN
+    
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'ERROR: Password de limpieza incorrecto. 
+    Operación cancelada.';
+    
+    ELSE
+        START TRANSACTION;
+        -- Permitir DELETE sin WHERE (solo para práctica)
+        SET SQL_SAFE_UPDATES = 0;
+        DELETE FROM clientes;
+        ALTER TABLE clientes AUTO_INCREMENT = 1;
+        DELETE FROM proveedores;
+        ALTER TABLE proveedores AUTO_INCREMENT = 1;
+        DELETE FROM persona_fisica;
+        DELETE FROM persona_moral;
+        DELETE FROM personas;
+        ALTER TABLE personas AUTO_INCREMENT = 1;
+        DELETE FROM bitacora;
+        ALTER TABLE bitacora AUTO_INCREMENT = 1;
+        COMMIT;
+    END IF;
+END
+```
+
+**Uso:**
+Se utiliza para limpiar completamente los datos de la base de datos en entornos de prueba o desarrollo, reiniciando las tablas principales.
+
+---
+
+#### limpiar_datos_compras  
+
+**Descripción:**  
+Procedimiento almacenado que elimina todos los datos relacionados con el proceso de compras, incluyendo carritos, pedidos, transacciones y métodos de pago. También limpia registros específicos de la bitácora y reinicia los valores `AUTO_INCREMENT` para mantener consistencia en pruebas.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `limpiar_datos_compras`()
+BEGIN
+    -- Desactivar llaves foráneas
+    SET FOREIGN_KEY_CHECKS = 0;
+
+    -- Eliminar datos
+    DELETE FROM carrito_detalle;
+    DELETE FROM carritos;
+    ALTER TABLE carritos AUTO_INCREMENT = 1;
+
+    DELETE FROM pedidos;
+    ALTER TABLE pedidos AUTO_INCREMENT = 1;
+
+    DELETE FROM transacciones_financieras;
+    ALTER TABLE transacciones_financieras AUTO_INCREMENT = 1;
+
+    DELETE FROM metodos_pago;
+    ALTER TABLE metodos_pago AUTO_INCREMENT = 1;
+
+    -- Limpiar bitácora
+    DELETE FROM bitacora WHERE tabla = 'carritos';
+    DELETE FROM bitacora WHERE tabla = 'carrito_detalle';
+    DELETE FROM bitacora WHERE tabla = 'pedidos';
+    DELETE FROM bitacora WHERE tabla = 'transacciones_financieras';
+    DELETE FROM bitacora WHERE tabla = 'metodos_pago';
+
+    -- Reiniciar auto_increment de bitácora
+    ALTER TABLE bitacora AUTO_INCREMENT = 251;
+
+    -- Activar llaves foráneas
+    SET FOREIGN_KEY_CHECKS = 1;
+END
+```
+**Uso:**
+Se utiliza para reiniciar completamente los datos relacionados con compras en la base de datos, facilitando pruebas, simulaciones o reinicios de entorno.
+
+---
+
+#### rellenar_metodos_pago  
+
+**Descripción:**  
+Procedimiento almacenado que genera y asigna automáticamente métodos de pago a los usuarios existentes. Recorre la tabla de usuarios, obtiene el nombre del titular y crea registros simulados de tarjetas bancarias con datos aleatorios.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `rellenar_metodos_pago`()
+BEGIN
+    DECLARE v_done INT DEFAULT FALSE;
+    DECLARE v_usuario_id INT;
+    DECLARE v_nombre VARCHAR(100);
+    
+    DECLARE cur_usuarios CURSOR FOR 
+        SELECT u.persona_fisica_id, pf.nombre 
+        FROM usuarios u
+        JOIN persona_fisica pf ON u.persona_fisica_id = pf.id;
+        
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = TRUE;
+
+    OPEN cur_usuarios;
+    usuarios_loop: LOOP
+        FETCH cur_usuarios INTO v_usuario_id, v_nombre;
+        IF v_done THEN LEAVE usuarios_loop; END IF;
+
+        INSERT INTO metodos_pago (
+            usuario_id, 
+            numero_tarjeta, 
+            tipo_red_bancaria, 
+            tipo_cuenta, 
+            titular, 
+            fecha_expiracion, 
+            fecha_registro, 
+            estatus
+        )
+        VALUES (
+            v_usuario_id,
+            CONCAT(FLOOR(1000 + RAND() * 8999), '0000', FLOOR(1000 + RAND() * 8999), '9999'),
+            ELT(FLOOR(1 + RAND() * 3), 'Visa', 'Mastercard', 'American express'),
+            'Debito',
+            v_nombre,
+            '12/28',
+            NOW(),
+            'Vigente'
+        );
+    END LOOP;
+    CLOSE cur_usuarios;
+    SELECT 'Tabla metodos_pago lista' AS Resultado;
+END
+```
+
+**Uso:**
+Se utiliza para poblar automáticamente la tabla metodos_pago con datos simulados para cada usuario existente.
+---
+
+#### simula_carritos  
+
+**Descripción:**  
+Procedimiento almacenado que simula la creación de múltiples carritos de compra con comportamiento realista. Genera carritos asociados a sesiones, agrega productos aleatorios (opcionalmente filtrados por categoría), define cantidades, estatus y fechas dentro del rango de la sesión, y calcula los totales finales.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `simula_carritos`(
+    IN p_cuantos INT,
+    IN p_total_productos INT,
+    IN p_categoria VARCHAR(100)
+)
+BEGIN
+    DECLARE v_i INT DEFAULT 1;
+    DECLARE v_j INT DEFAULT 0;
+    DECLARE v_intentos INT DEFAULT 0;
+    DECLARE v_max_intentos INT DEFAULT 200;
+
+    DECLARE v_sesion_id INT;
+    DECLARE v_carrito_id INT;
+    DECLARE v_divisa_id INT;
+
+    DECLARE v_f_inicio_sesion DATETIME;
+    DECLARE v_f_fin_sesion DATETIME;
+    DECLARE v_fecha_item DATETIME;
+    DECLARE v_segundos_sesion INT;
+
+    DECLARE v_total_productos_actual INT;
+    DECLARE v_producto_id INT;
+    DECLARE v_precio_unitario DECIMAL(10,2);
+    DECLARE v_estatus_item VARCHAR(20);
+
+    DECLARE v_duracion_min INT;
+    DECLARE v_tipo_usuario INT;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    carritos_loop: WHILE v_i <= p_cuantos DO
+        START TRANSACTION;
+
+        SET v_sesion_id = elige_sesion();
+        SET v_divisa_id = elige_divisa();
+
+        SELECT fecha_inicio, fecha_fin
+        INTO v_f_inicio_sesion, v_f_fin_sesion
+        FROM sesiones
+        WHERE id = v_sesion_id;
+
+        SET v_segundos_sesion = TIMESTAMPDIFF(
+            SECOND,
+            v_f_inicio_sesion,
+            COALESCE(v_f_fin_sesion, DATE_ADD(v_f_inicio_sesion, INTERVAL 20 MINUTE))
+        );
+
+        SET v_duracion_min = v_segundos_sesion / 60;
+
+        SET v_tipo_usuario = FLOOR(1 + RAND()*4);
+
+        IF p_total_productos IS NULL OR p_total_productos <= 0 THEN
+
+            IF v_tipo_usuario = 1 THEN
+                IF v_duracion_min <= 10 THEN
+                    SET v_total_productos_actual = 1;
+                ELSE
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(1,2);
+                END IF;
+
+            ELSEIF v_tipo_usuario = 2 THEN
+                IF v_duracion_min <= 10 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(1,2);
+                ELSEIF v_duracion_min <= 25 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(2,4);
+                ELSE
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(3,5);
+                END IF;
+
+            ELSEIF v_tipo_usuario = 3 THEN
+                IF v_duracion_min <= 10 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(2,3);
+                ELSEIF v_duracion_min <= 30 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(3,6);
+                ELSE
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(5,8);
+                END IF;
+
+            ELSE
+                IF v_duracion_min <= 15 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(2,4);
+                ELSEIF v_duracion_min <= 40 THEN
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(4,7);
+                ELSE
+                    SET v_total_productos_actual = genera_numero_aleatorio_rangos(6,10);
+                END IF;
+            END IF;
+
+        ELSE
+            SET v_total_productos_actual = p_total_productos;
+        END IF;
+
+        INSERT INTO carritos (
+            sesion_id, divisa_id, total_productos, monto_aproximado, fecha_creacion, estatus
+        )
+        VALUES (
+            v_sesion_id, v_divisa_id, 0, 0.00, v_f_inicio_sesion, 'Activo'
+        );
+
+        SET v_carrito_id = LAST_INSERT_ID();
+        SET v_j = 0;
+        SET v_intentos = 0;
+
+        detalle_loop: WHILE v_j < v_total_productos_actual AND v_intentos < v_max_intentos DO
+            SET v_intentos = v_intentos + 1;
+
+            SET v_fecha_item = DATE_ADD(
+                v_f_inicio_sesion,
+                INTERVAL FLOOR(RAND() * v_segundos_sesion) SECOND
+            );
+
+            SELECT p.id, p.precio_menudeo
+            INTO v_producto_id, v_precio_unitario
+            FROM productos p
+            LEFT JOIN productos_categorias pc ON p.id = pc.producto_id
+            LEFT JOIN categorias c ON pc.categoria_id = c.id
+            WHERE p.estatus IN ('Activo','En existencia')
+              AND (
+                    p_categoria IS NULL 
+                    OR p_categoria = '' 
+                    OR c.nombre = p_categoria
+                  )
+              AND NOT EXISTS (
+                    SELECT 1 FROM carrito_detalle cd
+                    WHERE cd.carrito_id = v_carrito_id
+                    AND cd.producto_id = p.id
+              )
+            ORDER BY RAND()
+            LIMIT 1;
+
+            IF v_producto_id IS NULL THEN
+                LEAVE detalle_loop;
+            END IF;
+
+            IF v_tipo_usuario = 4 AND RAND() < 0.30 THEN
+                SET v_estatus_item = 'Eliminado';
+            ELSEIF RAND() < 0.10 THEN
+                SET v_estatus_item = 'Eliminado';
+            ELSE
+                SET v_estatus_item = 'Activo';
+            END IF;
+
+            INSERT INTO carrito_detalle (
+                carrito_id, producto_id, cantidad, precio_unitario,
+                fecha_registro, fecha_actualizacion, estatus
+            )
+            VALUES (
+                v_carrito_id,
+                v_producto_id,
+                elige_cantidad(),
+                v_precio_unitario,
+                v_fecha_item,
+                CASE 
+                    WHEN v_estatus_item = 'Eliminado'
+                    THEN DATE_ADD(v_fecha_item, INTERVAL FLOOR(RAND()*60) SECOND)
+                    ELSE NULL
+                END,
+                v_estatus_item
+            );
+
+            SET v_j = v_j + 1;
+
+        END WHILE;
+
+        IF NOT EXISTS (
+            SELECT 1 FROM carrito_detalle
+            WHERE carrito_id = v_carrito_id
+            AND estatus = 'Activo'
+        ) THEN
+            UPDATE carrito_detalle
+            SET estatus = 'Activo'
+            WHERE carrito_id = v_carrito_id
+            LIMIT 1;
+        END IF;
+
+        UPDATE carritos c
+        LEFT JOIN (
+            SELECT carrito_id,
+                   SUM(cantidad) AS t_p,
+                   SUM(cantidad * precio_unitario) AS t_m
+            FROM carrito_detalle
+            WHERE carrito_id = v_carrito_id
+            AND estatus = 'Activo'
+            GROUP BY carrito_id
+        ) x ON c.id = x.carrito_id
+        SET c.total_productos = IFNULL(x.t_p,0),
+            c.monto_aproximado = IFNULL(x.t_m,0)
+        WHERE c.id = v_carrito_id;
+
+        COMMIT;
+        SET v_i = v_i + 1;
+
+    END WHILE;
+
+END
+```
+
+**Uso:**
+Se utiliza para generar datos simulados de carritos de compra en masa (p_cuantos), permitiendo controlar la cantidad de productos (p_total_productos) o dejar que el sistema los determine dinámicamente según el comportamiento del usuario y la duración de la sesión. Es ideal para pruebas de carga, análisis de comportamiento y simulaciones de e-commerce.
+
+---
+
+#### simula_carritos_v2  
+
+**Descripción:**  
+Procedimiento almacenado que genera carritos de compra simulados de forma simplificada. Crea carritos con productos aleatorios, asigna fechas dentro de un rango desde el inicio del año hasta la fecha actual y calcula automáticamente el total de productos y el monto aproximado.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `simula_carritos_v2`(
+    IN p_cuantos INT,
+    IN p_total_productos INT
+)
+BEGIN
+    DECLARE v_i INT DEFAULT 1;
+    DECLARE v_j INT;
+
+    DECLARE v_carrito_id INT;
+    DECLARE v_producto_id INT;
+    DECLARE v_precio DOUBLE;
+    DECLARE v_sesion_id INT;
+
+    DECLARE v_fecha DATETIME;
+    DECLARE v_inicio DATETIME;
+    DECLARE v_fin DATETIME;
+
+    IF p_cuantos IS NULL OR p_cuantos <= 0 THEN
+        SET p_cuantos = 10;
+    END IF;
+
+    IF p_total_productos IS NULL OR p_total_productos <= 0 THEN
+        SET p_total_productos = 3;
+    END IF;
+
+    SET v_inicio = STR_TO_DATE(CONCAT(YEAR(NOW()),'-01-01 00:00:00'), '%Y-%m-%d %H:%i:%s');
+    SET v_fin = NOW();
+
+    WHILE v_i <= p_cuantos DO
+
+        SET v_fecha = DATE_ADD(
+            v_inicio,
+            INTERVAL FLOOR(RAND() * TIMESTAMPDIFF(SECOND, v_inicio, v_fin)) SECOND
+        );
+
+        --  sesión aleatoria
+        SELECT id 
+        INTO v_sesion_id
+        FROM sesiones
+        ORDER BY RAND()
+        LIMIT 1;
+
+        INSERT INTO carritos(
+            sesion_id,
+            divisa_id,
+            total_productos,
+            monto_aproximado,
+            fecha_creacion,
+            estatus
+        )
+        VALUES (
+            v_sesion_id,
+            1,
+            0,
+            0,
+            v_fecha,
+            'Activo'
+        );
+
+        SET v_carrito_id = LAST_INSERT_ID();
+        SET v_j = 1;
+
+        productos_loop: WHILE v_j <= p_total_productos DO
+
+            SET v_producto_id = NULL;
+
+            SELECT p.id, p.precio_menudeo
+            INTO v_producto_id, v_precio
+            FROM productos p
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM carrito_detalle cd
+                WHERE cd.carrito_id = v_carrito_id
+                  AND cd.producto_id = p.id
+            )
+            ORDER BY RAND()
+            LIMIT 1;
+
+            IF v_producto_id IS NULL THEN
+                LEAVE productos_loop;
+            END IF;
+
+            INSERT INTO carrito_detalle(
+                carrito_id,
+                producto_id,
+                cantidad,
+                precio_unitario,
+                fecha_registro
+            )
+            VALUES (
+                v_carrito_id,
+                v_producto_id,
+                FLOOR(1+RAND()*3),
+                v_precio,
+                v_fecha
+            );
+
+            SET v_j = v_j + 1;
+
+        END WHILE;
+
+        UPDATE carritos c
+        JOIN (
+            SELECT carrito_id,
+                   SUM(cantidad) AS total,
+                   SUM(cantidad * precio_unitario) AS monto
+            FROM carrito_detalle
+            WHERE carrito_id = v_carrito_id
+            GROUP BY carrito_id
+        ) x ON c.id = x.carrito_id
+        SET c.total_productos = x.total,
+            c.monto_aproximado = x.monto;
+
+        SET v_i = v_i + 1;
+
+    END WHILE;
+
+END
+```
+**Uso:**
+Se utiliza para generar rápidamente carritos de compra con productos aleatorios para pruebas o simulaciones. Permite definir cuántos carritos crear (p_cuantos) y cuántos productos incluir en cada uno (p_total_productos), facilitando la generación de datos para testing en sistemas de e-commerce.
+---
+#### simula_compras  
+
+**Descripción:**  
+Procedimiento almacenado que simula el proceso completo de compras a partir de carritos activos. Genera pedidos, asigna métodos de pago (reutilizando o creando nuevos), registra transacciones financieras y actualiza el estado de los carritos.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `simula_compras`(IN p_total INT)
+BEGIN
+    DECLARE v_done INT DEFAULT 0;
+    DECLARE v_carrito_id INT;
+    DECLARE v_usuario_id INT;
+    DECLARE v_total DECIMAL(10,2);
+    DECLARE v_cant_prod INT;
+    DECLARE v_pedido_id INT;
+    DECLARE v_metodo_pago_id INT;
+    DECLARE v_existe_pedido INT;
+    DECLARE v_count INT;
+
+    DECLARE v_fecha_carrito DATETIME;
+    DECLARE v_fecha_pedido DATETIME;
+    DECLARE v_fecha_transaccion DATETIME;
+
+    DECLARE v_origen VARCHAR(50);
+
+    DECLARE cur_carritos CURSOR FOR
+        SELECT c.id, s.usuario_id, c.fecha_creacion
+        FROM carritos c
+        INNER JOIN sesiones s ON c.sesion_id = s.id
+        WHERE c.estatus = 'Activo'
+        ORDER BY c.id
+        LIMIT p_total;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_done = 1;
+
+    OPEN cur_carritos;
+
+    read_loop: LOOP
+        FETCH cur_carritos INTO v_carrito_id, v_usuario_id, v_fecha_carrito;
+
+        IF v_done = 1 THEN 
+            LEAVE read_loop; 
+        END IF;
+
+        -- A. EVITAR DUPLICADOS
+        SELECT COUNT(*) INTO v_existe_pedido 
+        FROM pedidos 
+        WHERE carrito_id = v_carrito_id;
+
+        IF v_existe_pedido > 0 THEN
+            UPDATE carritos SET estatus = 'Convertido' WHERE id = v_carrito_id;
+            ITERATE read_loop;
+        END IF;
+
+        -- B. CALCULAR TOTAL
+        SELECT 
+            IFNULL(SUM(cantidad * precio_unitario), 0), 
+            IFNULL(SUM(cantidad), 0)
+        INTO v_total, v_cant_prod
+        FROM carrito_detalle
+        WHERE carrito_id = v_carrito_id 
+          AND estatus = 'Activo';
+
+        IF v_total <= 0 THEN 
+            ITERATE read_loop; 
+        END IF;
+
+        -- C. FECHAS
+        SET v_fecha_pedido = DATE_ADD(v_fecha_carrito, INTERVAL FLOOR(5 + RAND()*20) MINUTE);
+        SET v_fecha_transaccion = DATE_ADD(v_fecha_pedido, INTERVAL FLOOR(1 + RAND()*5) MINUTE);
+
+        -- D. CREAR PEDIDO
+        INSERT INTO pedidos (
+            carrito_id, total_productos, importe_total, fecha_registro, estatus, aprobacion
+        )
+        VALUES (
+            v_carrito_id, v_cant_prod, v_total, v_fecha_pedido, 'Pagado', b'1'
+        );
+
+        SET v_pedido_id = LAST_INSERT_ID();
+
+        -- E. MÉTODO DE PAGO (CORREGIDO)
+        SET v_metodo_pago_id = NULL;
+
+        -- contar métodos del usuario (NO rompe el cursor)
+        SELECT COUNT(*) 
+        INTO v_count
+        FROM metodos_pago
+        WHERE usuario_id = v_usuario_id;
+
+        -- 70% reutiliza si existen
+        IF v_count > 0 AND RAND() < 0.7 THEN
+            SELECT id 
+            INTO v_metodo_pago_id 
+            FROM metodos_pago 
+            WHERE usuario_id = v_usuario_id 
+            ORDER BY RAND()
+            LIMIT 1;
+        END IF;
+
+        -- si no hay o toca crear nuevo
+        IF v_metodo_pago_id IS NULL THEN
+            INSERT INTO metodos_pago (
+                usuario_id,
+                numero_tarjeta,
+                tipo_red_bancaria,
+                tipo_cuenta,
+                titular,
+                fecha_expiracion,
+                fecha_registro,
+                estatus
+            )
+            VALUES (
+                v_usuario_id,
+                LPAD(FLOOR(RAND() * 9999999999999999), 16, '0'),
+                ELT(FLOOR(1 + RAND()*3), 'Visa', 'Mastercard', 'American Express'),
+                ELT(FLOOR(1 + RAND()*2), 'Débito', 'Crédito'),
+                CONCAT('Usuario_', v_usuario_id),
+                '12/30',
+                NOW(),
+                'Vigente'
+            );
+
+            SET v_metodo_pago_id = LAST_INSERT_ID();
+        END IF;
+
+        -- F. ORIGEN DE PAGO
+        SET v_origen = ELT(FLOOR(1 + RAND()*7),
+            'Tarjeta de Débito',
+            'Tarjeta de Crédito',
+            'Transferencia Bancaria',
+            'Socio Comercial',
+            'Tarjeta de Regalo',
+            'Créditos Devolución',
+            'Vales Despensa'
+        );
+
+        -- G. TRANSACCIÓN
+        INSERT INTO transacciones_financieras (
+            tipo, origen, numero_convenio, monto, metodo_pago_id, estatus, fecha_registro
+        )
+        VALUES (
+            'Compra',
+            v_origen,
+            CONCAT('PED-', v_pedido_id),
+            v_total,
+            v_metodo_pago_id,
+            'Aprobado',
+            v_fecha_transaccion
+        );
+
+        -- H. CERRAR CARRITO
+        UPDATE carritos 
+        SET estatus = 'Convertido' 
+        WHERE id = v_carrito_id;
+
+    END LOOP;
+
+    CLOSE cur_carritos;
+
+END
+```
+**Uso:**
+Se utiliza para simular compras completas en un sistema de e-commerce, tomando carritos activos (p_total), generando pedidos, asignando métodos de pago y registrando transacciones.
+---
+
+#### simula_pedidos  
+
+**Descripción:**  
+Procedimiento almacenado que simula la generación de pedidos a partir de carritos activos. Selecciona carritos aleatorios, calcula el total de productos y el importe, y crea pedidos en estado pendiente, actualizando posteriormente el estado del carrito.
+
+```sql
+CREATE DEFINER=`root`@`localhost` PROCEDURE `simula_pedidos`(IN v_cuantos INT)
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE v_carrito_id INT;
+    DECLARE v_total DECIMAL(10,2);
+    DECLARE v_total_productos INT;
+
+    WHILE i <= v_cuantos DO
+
+        START TRANSACTION;
+
+        /* TOMAR CARRITO ALEATORIO */
+        SELECT id INTO v_carrito_id
+        FROM carritos
+        WHERE estatus = 'Activo'
+        ORDER BY RAND()
+        LIMIT 1;
+
+        /* CALCULAR TOTAL */
+        SELECT 
+            COUNT(*),
+            IFNULL(SUM(cantidad * precio_unitario),0)
+        INTO v_total_productos, v_total
+        FROM carrito_detalle
+        WHERE carrito_id = v_carrito_id;
+
+        IF v_total_productos > 0 THEN
+
+            INSERT INTO pedidos (
+                carrito_id,
+                total_productos,
+                importe_total,
+                fecha_registro,
+                estatus,
+                aprobacion
+            )
+            VALUES (
+                v_carrito_id,
+                v_total_productos,
+                v_total,
+                NOW(),
+                'Pendiente',   --  AÚN NO PAGADO
+                b'0'
+            );
+
+            UPDATE carritos
+            SET estatus = 'Convertido'
+            WHERE id = v_carrito_id;
+
+            COMMIT;
+
+        ELSE
+            ROLLBACK;
+        END IF;
+
+        SET i = i + 1;
+
+    END WHILE;
+
+END
+```
+**Uso:**
+Se utiliza para generar pedidos en estado "Pendiente" a partir de carritos activos, útil en pruebas donde se requiere simular órdenes sin procesar pagos. Permite crear múltiples pedidos (v_cuantos) de forma automatizada para testing o análisis.
+---
+#### simula_sesiones  
+
+**Descripción:**  
+Procedimiento almacenado que simula la creación de sesiones de usuarios con datos realistas. Genera información como dispositivo, plataforma, sistema operativo, país y fechas (registro, inicio y fin), distribuidas aleatoriamente dentro de un rango de tiempo.
+
+```sql
+CREATE DEFINER=`juan.catarino`@`%` PROCEDURE `simula_sesiones`(v_cuantos INT)
+BEGIN
+	DECLARE i INT DEFAULT 1;
+    DECLARE v_dispositivo VARCHAR(50);
+    DECLARE v_fecha_apertura DATETIME DEFAULT '2020-01-01 00:00:00';
+    DECLARE v_fecha_hoy DATETIME DEFAULT NOW();
+    DECLARE v_fecha_registro DATETIME;
+    DECLARE v_fecha_inicio DATETIME;
+    DECLARE v_fecha_fin DATETIME;
+    DECLARE v_segundos_total INT;
+    DECLARE v_duracion_segundos INT;
+
+	WHILE i <= v_cuantos DO
+
+        
+        SET v_dispositivo = elige_dispositivo();
+
+       
+        SET v_segundos_total = TIMESTAMPDIFF(SECOND, v_fecha_apertura, v_fecha_hoy);
+
+        SET v_fecha_registro = DATE_ADD(
+            v_fecha_apertura,
+            INTERVAL FLOOR(RAND() * v_segundos_total) SECOND
+        );
+
+        
+        SET v_fecha_inicio = DATE_ADD(
+            v_fecha_registro,
+            INTERVAL FLOOR(5 + (RAND() * 115)) SECOND
+        );
+
+        
+        SET v_duracion_segundos = 
+            CASE 
+                WHEN RAND() < 0.5 THEN FLOOR(180 + (RAND() * 120))   -- 3 a 5 min
+                WHEN RAND() < 0.8 THEN FLOOR(300 + (RAND() * 180))   -- 5 a 8 min
+                ELSE FLOOR(480 + (RAND() * 240))                     -- 8 a 12 min
+            END;
+
+       
+        SET v_fecha_fin = DATE_ADD(
+            v_fecha_inicio,
+            INTERVAL v_duracion_segundos SECOND
+        );
+
+        INSERT INTO sesiones VALUES (
+            DEFAULT,
+            elige_usuario(),
+            elige_plataforma(),
+            v_dispositivo,
+            elige_sistema_operativo(v_dispositivo),
+            elige_pais(),
+            v_fecha_registro,
+            v_fecha_inicio,
+            v_fecha_fin,
+            'Activa'
+        );
+
+		SET i = i + 1;
+
+	END WHILE;
+END
+```
+**Uso:**
+Se utiliza para generar sesiones de usuario simuladas (v_cuantos) con datos variados y realistas, incluyendo dispositivos, plataformas y duración de sesión. Es útil para pruebas, análisis de comportamiento de usuarios y simulaciones en sistemas web o aplicaciones.
+
+
 

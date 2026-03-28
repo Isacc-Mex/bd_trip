@@ -44,7 +44,7 @@ Verificar que el proceso de compra funcione correctamente de principio a fin sin
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 01 - Compra completa](test1_230550.png)
+![Test 01 - Compra completa](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2001/carritos_test1.png)
 
 #### Estatus:
 Exitosa.

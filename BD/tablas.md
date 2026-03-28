@@ -24,6 +24,51 @@ Esta tabla almacena información personal de los usuarios o clientes del sistema
 - Fecha de nacimiento
 - Género
 - Información de identificación básica
+
+#### trigger_personas_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha insertado una nueva persona.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `personas_AFTER_INSERT` AFTER INSERT ON `personas` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "personas", "Insert", 
+    session_user(), concat_ws(" ",
+    "Se ha insertado un nuevo persona del tipo:", new.tipo,
+    "con el ID: ", new.id), now());
+END
+
+```
+---
+
+#### trigger_personas_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una persona.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `personas_AFTER_UPDATE` AFTER UPDATE ON `personas` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado la persona con el ID: ", old.id), now());
+END
+
+```
+---
+
+#### trigger_personas_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado una persona .
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `personas_AFTER_DELETE` AFTER DELETE ON `personas` FOR EACH ROW BEGIN
+INSERT INTO bitacora VALUES(DEFAULT, "personas", "Delete", 
+    session_user(), concat_ws(" ",
+    "Se ha  eliminado uan persona con el ID: ", old.id), now());
+END
+
+```
 ---
 
 ## Tabla: persona_fisica
@@ -52,6 +97,65 @@ Esta tabla almacena información personal de los usuarios del sistema, incluyend
 - Género
 - Fecha de nacimiento
 - Apellidos
+
+#### trigger_persona_fisica_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha insertado una nueva persona física.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_fisica_AFTER_INSERT` AFTER INSERT ON `persona_fisica` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona_fisica", "Insert", 
+    session_user(), concat_ws(" ",
+    "Se ha insertado una nueva persona física llamada:", 
+    CONCAT_WS(" ",new.titulo_cortesia, new.nombre, new.primer_apellido,
+    new.segundo_apellido),
+    "con el ID: ", new.id), now());
+END
+
+```
+
+#### trigger_persona_fisica_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una persona fisica.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_fisica_AFTER_UPDATE` AFTER UPDATE ON `persona_fisica` FOR EACH ROW BEGIN
+INSERT INTO bitacora VALUES(DEFAULT, "persona_fisica", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado la persona fisica con el ID: ", old.id), now());
+END
+
+```
+
+#### trigger_persona_fisica_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una persona fisica.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_fisica_AFTER_UPDATE` AFTER UPDATE ON `persona_fisica` FOR EACH ROW BEGIN
+INSERT INTO bitacora VALUES(DEFAULT, "persona_fisica", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado la persona fisica con el ID: ", old.id), now());
+END
+
+```
+
+#### trigger_persona_fisica_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado a una persona fisica.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_fisica_AFTER_DELETE` AFTER DELETE ON `persona_fisica` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona_fisica", "delete", 
+    session_user(), concat_ws(" ",
+    "Se ha eliminado a la persona fisica con id:", old.id), now());
+END
+
+```
 ---
 
 ## Tabla: persona_moral
@@ -81,6 +185,49 @@ Esta tabla almacena información legal y administrativa de las empresas registra
 - Tipo de sociedad
 - Estatus
 - Información jurídica y patrimonial
+
+#### trigger_persona_moral_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha insertado una nueva persona moral.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_moral_AFTER_INSERT` AFTER INSERT ON `persona_moral` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona_moral", "Insert", 
+    session_user(), concat_ws(" ",
+    "Se ha insertado un nueva persona moral llamada:", new.razon_social,
+    "con el ID: ", new.id), now());
+END
+
+```
+#### trigger_persona_moral_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado una persona moral.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_moral_AFTER_UPDATE` AFTER UPDATE ON `persona_moral` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona_moral", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado la persona moral con el ID: ", old.id), now());
+END
+
+```
+
+#### trigger_persona_moral_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado a UNA persona moral.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `persona_moral_AFTER_DELETE` AFTER DELETE ON `persona_moral` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "persona_moral", "Delete", 
+    session_user(), concat_ws(" ",
+    "Se ha eliminado a la persona moral con el ID: ",
+    old.id), now());
+END
+
+```
 ---
 
 ## Tabla: usuarios
@@ -107,6 +254,54 @@ Esta tabla almacena información de autenticación y control de acceso de los us
 - Contraseña
 - fecha_registro
 - fecha_ultimo_ingreso
+
+#### trigger_usuarios_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha creado un nuevo usuario.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `usuarios_AFTER_INSERT` AFTER INSERT ON `usuarios` FOR EACH ROW BEGIN
+	INSERT INTO bitacora VALUES(default, "usuarios",
+    "Insert", session_user(), concat_ws(" ", "Se ha creado un nuevo
+    usuario con el nickname:", new.nickname, "asociado a la persona 
+    física con id:",  new.persona_fisica_id, "con estado:", new.estatus),
+    now());
+END
+
+```
+
+#### trigger_usuarios_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado un usuario.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `usuarios_AFTER_UPDATE` AFTER UPDATE ON `usuarios` FOR EACH ROW BEGIN
+	INSERT INTO bitacora VALUES(default, "usuarios",
+    "Update", session_user(), concat_ws(" ", "Se ha actualizado el
+    usuario con el nickname:", new.nickname, "asociado a la persona 
+    física con id:",  new.persona_fisica_id, "con estado:", new.estatus),
+    now());
+END
+
+```
+
+#### trigger_usuarios_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eliminado un usuario.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `usuarios_AFTER_DELETE` AFTER DELETE ON `usuarios` FOR EACH ROW BEGIN
+	INSERT INTO bitacora VALUES(default, "usuarios",
+    "Delete", session_user(), concat_ws(" ", "Se ha eliminado el
+    usuario con el nickname:", old.nickname, "asociado a la persona 
+    física con id:",  old.persona_fisica_id, "con estado:", old.estatus),
+    now());
+END
+
+```
 ---
 
 ## Tabla: clientes
@@ -203,6 +398,50 @@ Esta tabla almacena información relacionada con los proveedores del sistema, in
 - Cantidad de productos suministrados
 - Monto acumulado de transacciones
 - Última fecha de actividad
+
+#### trigger_proveedores_AFTER_INSERT
+Descripción:
+Trigger que registra automáticamente que se ha insertado un nuevo proveedor asociado a una persona.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `proveedores_AFTER_INSERT` AFTER INSERT ON `proveedores` FOR EACH ROW BEGIN
+ INSERT INTO bitacora VALUES(DEFAULT, "proveedores", "Insert", 
+    session_user(), concat_ws(" ",
+    "Se ha insertado un nuevo proveedor asociado a la persona con id : ", new.persona_id), now());
+END
+
+```
+
+#### trigger_proveedores_AFTER_UPDATE
+Descripción:
+Trigger que registra automáticamente que se ha actualizado un proveedor asociado a una persona.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `proveedores_AFTER_UPDATE` AFTER UPDATE ON `proveedores` FOR EACH ROW BEGIN
+    INSERT INTO bitacora VALUES(DEFAULT, "proveedores", "Update", 
+    session_user(), concat_ws(" ",
+    "Se ha actualizado el proveedor asociado a la persona con el ID: ",
+    old.persona_id), now());
+END
+
+```
+
+#### trigger_proveedores_AFTER_DELETE
+Descripción:
+Trigger que registra automáticamente que se ha eleminado UN proveedor asociado a una persona.
+
+```sql
+
+CREATE DEFINER=`root`@`localhost` TRIGGER `proveedores_AFTER_DELETE` AFTER DELETE ON `proveedores` FOR EACH ROW BEGIN
+INSERT INTO bitacora VALUES(DEFAULT, "proveedores", "Delete", 
+    session_user(), concat_ws(" ",
+    "Se ha eleminado el proveedor asociado a la persona con el ID: ",
+    old.persona_id), now());
+END
+
+```
 ---
 
 ## Tabla: divisas

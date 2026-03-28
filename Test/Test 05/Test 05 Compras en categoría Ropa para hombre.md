@@ -30,7 +30,7 @@ Validar estabilidad con carga media.
 
 Se debe incluir evidencia visual del resultado de la consulta ejecutada.
 
-![Test 045 - Compras en categorías "Ropa para hombre" ](test1_230550.png)
+![Test 045 - Compras en categorías "Ropa para hombre" ](https://github.com/Isacc-Mex/bd_trip/blob/main/Test/Test%2005/carritos_test5.png)
 
 #### Estatus:
 Exitosa.
